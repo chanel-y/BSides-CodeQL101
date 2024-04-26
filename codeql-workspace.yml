@@ -1,0 +1,4 @@
+provide:
+ - "codeql/codeql-workspace.yml"
+ - "src/queries/**"
+ - "src/tests/**"
