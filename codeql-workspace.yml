@@ -1,4 +1,4 @@
+name: chanel-y/csharp-queries
 provide:
  - "codeql/codeql-workspace.yml"
- - "src/queries/**"
- - "src/tests/**"
+ - "queries/**"
