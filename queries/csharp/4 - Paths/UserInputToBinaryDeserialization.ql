@@ -10,8 +10,7 @@
  */
 
  import csharp
- import microsoft.code.csharp.dataflow.flowsources.Remote
- private import microsoft.code.csharp.dataflow.TaintSteps
+ import semmle.code.csharp.security.dataflow.flowsources.Remote
 
  module UserInputDeserializeConfigFlow = TaintTracking::Global<UserInputDeserializeConfig>;
  import UserInputDeserializeConfigFlow::PathGraph

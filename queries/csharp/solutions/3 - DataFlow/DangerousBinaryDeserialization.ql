@@ -9,7 +9,13 @@
  * @problem.severity error
  */
 
-import csharp
+ import csharp
 
-from Class c 
-select c, "this is a class"
+ class Deserialize extends MethodCall{
+     Deserialize(){
+         this.getTarget().hasFullyQualifiedName("System.Runtime.Serialization.Formatters.Binary.BinaryFormatter", "Deserialize")
+     }
+ }
+ 
+ from Deserialize deserialize
+ select deserialize, "BinaryFormatter.Deserialize() is called here"
