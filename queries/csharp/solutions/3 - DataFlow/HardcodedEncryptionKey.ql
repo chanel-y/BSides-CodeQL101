@@ -11,38 +11,33 @@
 
 import csharp
 
-abstract class KeySource extends DataFlow::Node { }
-abstract class KeySink extends DataFlow::Node { }
+abstract class KeySink extends DataFlow::Node {}
 
- class ByteArrayLiteralSource extends KeySource {
-    ByteArrayLiteralSource() {
-       this.asExpr() = any(ArrayCreation ac |
-         ac.getArrayType().getElementType() instanceof ByteType and
-         ac.hasInitializer())
-     }
-   }
-   
-   class StringLiteralSource extends KeySource {
-     StringLiteralSource() {
-       this.asExpr() instanceof StringLiteral
-     }
-   }
-
-   
-module SymmetricKeyTaintTrackingConfiguration implements DataFlow::ConfigSig {
-    predicate isSource(DataFlow::Node src) {
-        src.asExpr() instanceof StringLiteral
-    }
-
-    /** holds if the node is a symmetric encryption key sink. */
-    predicate isSink(DataFlow::Node sink) {
-        sink instanceof KeySink
-    }
+class KeyPropertyAssignmentSink extends KeySink {
+  KeyPropertyAssignmentSink() {
+    exists( AssignExpr ae, PropertyCall pc | 
+      this.asExpr() = ae.getRValue() and 
+      pc = ae.getLValue() and
+      pc.getProperty().getName() = "Key"
+    )
+  }
 }
-module SymmetricKeyTaintTrackingConfigurationFlow = TaintTracking::Global<SymmetricKeyTaintTrackingConfiguration>;
 
+class CreateEncryptorArgumentSink extends KeySink {
+  CreateEncryptorArgumentSink() {
+    exists( MethodCall mc | 
+      this.asExpr() = mc.getArgumentForName("rgbKey") and 
+      mc.getTarget().hasFullyQualifiedName("System.Security.Cryptography.SymmetricAlgorithm", "CreateEncryptor")
+    )
+  }
+}
 
-from DataFlow::Node source, DataFlow::Node sink
-where
-  SymmetricKeyTaintTrackingConfigurationFlow::flow(source, sink)
-select sink, "creates encryption key using a hard-coded value"
+ module HardcodedKeyConfig implements DataFlow::ConfigSig {
+  predicate isSource(DataFlow::Node src) { src.asExpr() instanceof StringLiteral }
+  predicate isSink(DataFlow::Node sink) { sink instanceof KeySink }
+}
+module HardcodedKeyFlow = DataFlow::Global<HardcodedKeyConfig>;
+ 
+ from DataFlow::Node source, DataFlow::Node sink
+ where HardcodedKeyFlow::flow(source, sink)
+ select sink, "Hardcoded encryption key flows to this sink."

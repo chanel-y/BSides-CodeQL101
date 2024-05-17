@@ -8,7 +8,7 @@ Starter Files and Docs for CodeQL Workshop for BSides Vancouver 2024
  - Install VSCode extension for CodeQL
  - Download the latest [CodeQL Binary](https://github.com/github/codeql-cli-binaries/releases) for your system
 
-## Creating a CodeQL Database
+## Option 1: Creating a CodeQL Database
  - clone the demo project repo
 
 

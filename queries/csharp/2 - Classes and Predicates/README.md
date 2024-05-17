@@ -12,11 +12,13 @@ You can also define your own custom types, using the following syntax:
 class OneTwoThree extends int {
   OneTwoThree() { // characteristic predicate
     this = 1 or this = 2 or this = 3
+  }
+
 }
 ```
 
 
-**Exercise:** Using the query written in the last exercise, create a class that finds 
+**Exercise:** Using the query written in the last exercise, create a class named WeakHash that finds all calls to `System.Security.Cryptography.SHA1.Create`
 
 ### Abstract Types
 Abstract classes have the following syntax: 
@@ -40,22 +42,58 @@ class SeventeenFiftyTwelve extends NumbersILike {
 
 ```
 
-Some 
+
 
 **Exercise:** Write an abstract class that combines both queries from the last exercise (`SHA1.Create();` and ` new SHA1CryptoServiceProvider()` ) . 
 
 ## What are Predicates?
+Predicates are to functions what types are to classes in CodeQL. 
+
+Predicates can either return a result. For example: 
+
+```
+predicate isNumberILike(int i){
+  result in [1,2,3]
+}
+
+```
+
+
+Types can also have member predicates. Using the previous class above, we can add a member predicate like so: 
+
+```
+class OneTwoThree extends int {
+  OneTwoThree() { // characteristic predicate
+    this = 1 or this = 2 or this = 3
+  }
+
+  predicate isEven(){
+    this = 2
+  }
+
+  string getString(){
+    this = 1 and result = "one" 
+    or
+    this = 2 and result = "two" 
+    or 
+    this = 3 and result = "three"
+  }
+
+}
+
+```
+
 
 ## In this Exercise
-In the last section, we created three queries to catch three different ways to use SHA1 in csharp. Now, let's create a single type that will define all three.
-
-## Bonus Exercise: TODO Comments
-Write a query that finds all comments with "TODO"
+In the last section, we created two queries to catch two different ways to use SHA1 in csharp. Let's combine them 
 
 
+**Exercise**: Create a class named "TODOComment", and rewrite your query from the last section  that the select statement looks like:
+```
+from TODOComment todo
+select todo, "TODO comment"
+```
 
-## Bonus Exercise: Empty Catch Block
-Write a query that finds all try-catch clauses where the catch block is empty
 
 ## Further Reading
  - [Predicates](https://codeql.github.com/docs/ql-language-reference/predicates/)

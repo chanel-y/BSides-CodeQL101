@@ -54,18 +54,18 @@ In this Intro folder, create a file named "WeakHashSHA1.ql" , and copy this star
 
 ```
 /**
- * @name Finds uses of the weak SHA1 algorithm
- * @description Finds uses of the weak SHA1 algorithm
+ * @name Finds Classes
+ * @description Finds Classes
  * @kind problem
- * @precision high
- * @id cs/sha1
+ * @precision very-high
+ * @id cs/find-classes
  * @problem.severity error
  */
 
 import csharp
 
-from MethodCall mc 
-select mc, "this is a methodcall"
+from Class c 
+select c, "this is a Class"
 ```
 
 Let's try and select for this case in the WeakHashes.cs file in our sample database: 
@@ -85,10 +85,48 @@ Following the steps above, open the AST for this file.
 
 -- AST SNAPSHOT -- 
 
-We can see that in CodeQL, this is a MethodCall. Update the query to: 
+We can see that in CodeQL, this is a MethodCall. Update the query so that it selects MethodCalls instead of classes. 
 
+Next, we want to select 
+
+```
+from MethodCall mc 
+where <mc calls SHA1.Create>
+select mc, "this is a MethodCall of SHA1.Create"
+```
+
+To figure out how to translate "<"mc calls SHA1.Create" into ql, we can look into what predicates are available for the MethodCall class in its [entry in the CodeQL standard library](https://codeql.github.com/codeql-standard-libraries/csharp/semmle/code/csharp/exprs/Call.qll/type.Call$MethodCall.html). This list is also reachable in VSCode intellisense:
+
+TODO: add screenshot of mc. 
+
+There's a lot of options here, some intuitive, and some not. If the description isn't clear, we can find out more about each by using them. 
+
+Run the following query:
+```
+from MethodCall mc 
+select mc, mc.getTarget(), mc.toString(), mc.getALocation()
+```
+
+**Exercise**: Try playing around with any of the other built-in predicates for MethodCall
+
+Of these, mc.getTarget() is the most promising - from the docs it returns the [Method](https://codeql.github.com/codeql-standard-libraries/csharp/semmle/code/csharp/Callable.qll/type.Callable$Method.html) that the MethodCall... calls. 
+
+We're getting closer. Method has several predicates that have "name" in the name: getName, hasFullyQualifiedName, hasName, and getUndecoratedName. 
+
+Like above, we can select for getName and getUndecoratedName to see what they return. But the other two evaluate to true or false. Instead, we can simply CTRL-F in the codeql/csharp/ql folder of this repository to see how these predicates have been used in other queries written by github. 
+
+TODO: snapshot of searching through 
+
+Putting this all together, our final query is: 
+
+```
+from MethodCall mc 
+where mc.getTarget().hasFullyQualifiedName("System.Security.Cryptography.SHA1", "Create")
+select mc, "this is a call to SHA1.Create()"
+```
 
 **Exercise**: Write a query that finds the other way SHA1 is created in this file, specifically the code snippet ` new SHA1CryptoServiceProvider()` 
+
 
 ## Further Reading
  - [Metadata for CodeQL queries](https://codeql.github.com/docs/writing-codeql-queries/metadata-for-codeql-queries/)
