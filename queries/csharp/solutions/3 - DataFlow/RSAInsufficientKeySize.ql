@@ -14,7 +14,7 @@
   private module FlowsFromInsufficientSizeToRSACreationFlow = DataFlow::Global<FlowsFromInsufficientSizeToRSACreation>;
   
   module FlowsFromInsufficientSizeToRSACreation implements DataFlow::ConfigSig {
-    predicate isSource(DataFlow::Node source) { source.asExpr().getValue().toInt() < 2048 }
+    predicate isSource(DataFlow::Node source) { source.asExpr().(IntegerLiteral).getValue().toInt() < 2048 }
   
     predicate isSink(DataFlow::Node sink) {
       exists(MethodCall mc | 

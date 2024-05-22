@@ -45,28 +45,130 @@ module MyFlowConfiguration implements DataFlow::ConfigSig {
 
 ```
 ## RemoteFlowSource
-RemoteFlowSource is a useful built-in class that . You can see more details on what classes are modeled [here](https://github.com/github/codeql/blob/main/csharp/ql/lib/semmle/code/csharp/security/dataflow/flowsources/Remote.qll)
+RemoteFlowSource is a useful built-in class that models user input. You can see more details on what classes are modeled [here](https://github.com/github/codeql/blob/main/csharp/ql/lib/semmle/code/csharp/security/dataflow/flowsources/Remote.qll). Because so many security vulnerabilities stem from user input (eg XSS, SSRF, unsafe Deserialization), this is commonly used as a source in dataflow queries.
 
 
 ## DataFlow vs TaintTracking
-There's two types of Dataflow: normal dataflow and tainttracking
+By default, dataflow will stop if the data value being tracked is modified at a step. 
 
-Tainttracking will cover the case where 
+For example, dataflow will stop at the second line in the following example: 
 
+```
+source = "mysource"
+intermediary = source + "something"
+mySink(intermediary)
+```
+
+If you want to include these steps in your query's dataflow, you'll need to change this line:
+
+```
+module MyFlow = DataFlow::Global<MyFlowConfiguration>;
+```
+
+to be:
+
+```
+module MyFlow = TaintTracking::Global<MyFlowConfiguration>;
+```
 
 ## In this Exercise
-Le'ts write a query that checks for cases where you create an [RSA object](https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.rsa?view=net-8.0) using a key value of less than 2048 bits. The sample code from this exercise is in the "RSAInsufficientKeySize.cs" file in the sample project.
 
+### Starting Code
+Let's write a query that checks for cases where you create an [RSA object](https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.rsa?view=net-8.0) using a key value of less than 2048 bits, considered the standard key size for a high-strength key ([source](https://www.ibm.com/docs/en/zos/2.4.0?topic=certificates-size-considerations-public-private-keys)). The sample code for this exercise is in the "RSAInsufficientKeySize.cs" file in the sample project.
 
-**Exercise**: Write a query that looks for SQL injection. In 
+First, copy over the starting code to a file named "RSAInsufficientKeySize.ql". 
 
+```
+/**
+ * @name RSA Key creation with an insufficient key length
+ * @description Finds creation of RSA that explicitly have insufficient key size
+ * @kind problem
+ * @tags security
+ *       external/cwe/cwe-502
+ * @precision very-high
+ * @id cs/rsa-key-creation-insufficient-key-length-demo
+ * @problem.severity error
+ */
 
-<details>
-<summary>How do I dropdown?</summary>
-<br>
-This is how you dropdown.
-</details>
+import csharp
+
+```
+
+### Defining our Source and Sink
+
+As a first step, we need to define our source and sink. In this case, our source will be "any hardcoded integer < 2048", and our sink will be "argument to RSA.Create()"
+
+Using the techniques from the previous parts, we can find our sink using the AST of the sample code file: 
+
+TODO: add screenshot
+
+Our source is an IntLiteral type. If we go to this type's [page in the standard library](https://codeql.github.com/codeql-standard-libraries/csharp/semmle/code/csharp/exprs/Literal.qll/type.Literal$IntLiteral.html), we can see a getValue() predicate, which returns a string. Then, if we go to the string type's [page in the standard library](https://codeql.github.com/codeql-standard-libraries/csharp/type.string.html), we can see a toInt() predicate, which returns an int value for that string. 
+
+Putting this all together, we can run the following query to find our source: 
+```
+import csharp
+
+from IntLiteral i
+where i.getValue().toInt() < 2048
+select i, "integer with value < 2048"
+```
+
+Next, we need to define our sink. This is an argument to a methodcall, which is a type we're already familiar with after our SHA1 query. Using the steps from before, we can identify calls to RSA.Create() using the .hasQualifiedName predicate, then use MethodCall's [getArgument](https://codeql.github.com/codeql-standard-libraries/csharp/semmle/code/csharp/exprs/Call.qll/predicate.Call$Call$getArgument.1.html) predicate to get an argument to that call. 
+
+Putting this all together, we can run the following query to find our sink:
+
+```
+import csharp
+
+from Expr e 
+where exists(MethodCall mc | 
+  mc.hasQualifiedName("System.Security.Cryptography.RSA", "Create")
+  e = mc.getAnArgument()
+)
+select e, "argument "
+
+```
+
+### isSource and isSink
+Now that we've defined our source and sink, we can start writing our dataflow query. Copying over the sample code from earlier, all we need to do is populate the isSource and isSink predicates: 
+
+```
+import csharp
+
+module MyFlowConfiguration implements DataFlow::ConfigSig {
+  predicate isSource(DataFlow::Node source) {
+    ...
+  }
+
+  predicate isSink(DataFlow::Node sink) {
+    ...
+  }
+}
+
+module MyFlow = DataFlow::Global<MyFlowConfiguration>;
+
+from DataFlow::Node source, DataFlow::Node sink
+where MyFlow::flow(source, sink)
+select source, "Dataflow to $@.", sink, sink.toString()
+```
+
+Both of these predicates have a DataFlow::Node argument which we will be defining by rewriting the queries we wrote before: 
+
+```
+predicate isSource(DataFlow::Node source) { source.asExpr().(IntegerLiteral).getValue().toInt() < 2048 }
+  
+predicate isSink(DataFlow::Node sink) {
+  exists(MethodCall mc | 
+    mc.getTarget().hasFullyQualifiedName("System.Security.Cryptography.RSA", "Create") and 
+    sink.asExpr() = mc.getAnArgument()
+  )
+}
+```
+
+Notice that both predicates use .asExpr() on the source and sink. You'll generally use this predicate in order to interact with the actual object in code that the DataFlow::Node type represents. 
+
+**Exercise**: Write a query that looks for when a hardcoded string is used as the key for an encryption algorithm (see [CWE-321](https://cwe.mitre.org/data/definitions/321.html)). The sample code for this exercise is in the "HardcodedEncryptionKey.cs" file in the sample project.
+
 
 ## Further Reading
  - [Analyzing data flow in C#](https://codeql.github.com/docs/codeql-language-guides/analyzing-data-flow-in-csharp/)
- - 

@@ -4,7 +4,6 @@
  * @kind path-problem
  * @id cs/insecure-sql-connection
  * @problem.severity error
- * @security-severity 7.5
  * @precision medium
  * @tags security
  *       external/cwe/cwe-327
@@ -16,18 +15,12 @@ module InsecureSqlConnectionConfig implements DataFlow::ConfigSig {
   predicate isSource(DataFlow::Node source) {
     exists(string s | s = source.asExpr().(StringLiteral).getValue().toLowerCase() |
       s.matches("%encrypt=false%")
-      or
-      not s.matches("%encrypt=%")
     )
   }
   predicate isSink(DataFlow::Node sink) {
     exists(ObjectCreation oc |
       oc.getRuntimeArgument(0) = sink.asExpr() and
-      (
-        oc.getType().getName() = "SqlConnectionStringBuilder"
-        or
-        oc.getType().getName() = "SqlConnection"
-      ) and 
+      oc.getType().getName() = "SqlConnectionStringBuilder" and 
       not exists(MemberInitializer mi | 
         mi = oc.getInitializer().(ObjectInitializer).getAMemberInitializer() and
         mi.getLValue().(PropertyAccess).getTarget().getName() = "Encrypt" and

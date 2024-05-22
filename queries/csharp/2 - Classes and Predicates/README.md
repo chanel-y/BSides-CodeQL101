@@ -42,8 +42,6 @@ class SeventeenFiftyTwelve extends NumbersILike {
 
 ```
 
-
-
 **Exercise:** Write an abstract class that combines both queries from the last exercise (`SHA1.Create();` and ` new SHA1CryptoServiceProvider()` ) . 
 
 ## What are Predicates?
@@ -80,15 +78,10 @@ class OneTwoThree extends int {
   }
 
 }
-
 ```
 
-
-## In this Exercise
-In the last section, we created two queries to catch two different ways to use SHA1 in csharp. Let's combine them 
-
-
 **Exercise**: Create a class named "TODOComment", and rewrite your query from the last section  that the select statement looks like:
+
 ```
 from TODOComment todo
 select todo, "TODO comment"

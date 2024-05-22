@@ -1,7 +1,7 @@
 /**
  * @name Hard-coded encryption key
  * @description The .Key property or rgbKey parameter of a SymmetricAlgorithm should never be a hard-coded value.
- * @kind path-problem
+ * @kind problem
  * @id cs/hardcoded-key
  * @problem.severity error
  * @security-severity 8.1
