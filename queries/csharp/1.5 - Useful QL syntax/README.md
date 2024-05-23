@@ -93,7 +93,7 @@ select e.(PasswordArgToMethodCall), "argument with parameter named password"
 
 All of these are just different syntax to do the similar things. Which to use will depend on how you've structured your query, and ultimately personal preference. 
 
-**Exercise**: like many aspects of codeql, a great way to get familiar with how the above are used is searching through the codeql repository. In the codeql/csharp/ql folder, CTRL-F for: "exists(" , "instanceof", and ".("
+**Exercise**: like many aspects of codeql, a great way to get familiar with how the above are used is searching through the codeql repository. In the codeql/csharp/ql folder, CTRL-F for: "exists(" , "instanceof", and ".(". How are these used?
 
 ## in 
 You can check if a value is in a range of values using the "in" keyword, using the syntax: 
@@ -153,9 +153,9 @@ Run the query:
 
 As you can see, the "qualifier" of the methodcall is the object (if one exists) on which the methodcall is called from. For any Access subclass like PropertyAccess or MemberAccess, it would be the object whose property or member you are accessing.
 
-**Exercise**: Write a query that finds all comments with "TODO"
+**Exercise**: Write a query that finds all comments with "TODO". Each of the sample .cs files will have one.
 
-**Exercise**: Write a query that finds all try-catch clauses where the catch block is empty
+**Exercise**: Write a query that finds all try-catch clauses where the catch block is empty. The sample code for this exercise is in the "EmptyTryCatch.cs" file in the sample project.
 
 ## Further Reading
  - [QL Language Reference](https://codeql.github.com/docs/ql-language-reference/)

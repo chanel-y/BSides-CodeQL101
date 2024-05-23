@@ -1,5 +1,7 @@
 # Intro 
 
+> IMPORTANT: please follow the [Setup Instructions](https://github.com/chanel-y/BSides-CodeQL101/tree/main?tab=readme-ov-file#setup-instructions) before proceeding through the rest of this workshop  
+
 ## Using the AST
 Exploring the AST (Abstract Syntax Tree) of your code is a really useful way to see how to translate objects in code to CodeQL. 
 
@@ -13,9 +15,11 @@ Navigate back to File Explorer, and you'll see that the folder containing the so
 
 This will take a couple seconds to run. Once completed, open the CodeQL extension tab, and the AST will be under "AST Viewer"
 
-**Exercise:** Click around the AST. What are the different CodeQL classes in this program? 
+![AST Viewer](images/ast-viewer.png)
 
-**Exercise:** Choose one class in the AST, and find its page in the [CodeQL Csharp Standard Library](https://codeql.github.com/codeql-standard-libraries/csharp/). What description, predicates (more on this later), and supertypes does it have? 
+**Exercise:** Click around the AST. What are the different CodeQL classes in this program, and what do they correspond with in the source file? How is the AST structured? What child-parent relationships do different objects have? 
+
+**Exercise:** Choose one class in the AST, and find its page in the [CodeQL Csharp Standard Library](https://codeql.github.com/codeql-standard-libraries/csharp/). For example, in the screenshot above of WeakHashes.cs we can see [Class](https://codeql.github.com/codeql-standard-libraries/csharp/semmle/code/csharp/Type.qll/type.Type$Class.html), [Method](https://codeql.github.com/codeql-standard-libraries/csharp/semmle/code/csharp/Callable.qll/type.Callable$Method.html) and [BlockStmt](https://codeql.github.com/codeql-standard-libraries/csharp/semmle/code/csharp/Stmt.qll/type.Stmt$BlockStmt.html). What description, predicates (more on this later), and supertypes does it have? 
 
 ## Running your first query
 ### Structure of a CodeQL Query
@@ -47,22 +51,25 @@ select c, "this is a Class"
 ## Writing your first query
 In this exercise, we're going to take our first steps to build up to a query to find cases where SHA1 is used. 
 
-In this Intro folder, create a file named "WeakHashSHA1.ql" , and copy this starting code (same content as Classes.ql): 
+In this Intro folder, create a file named "WeakHashSHA1.ql", and copy this starting code: 
 
 ```
 /**
- * @name Finds Classes
- * @description Finds Classes
+ * @name Detects use of SHA1
+ * @description SHA1 is considered weak and should not be used for cryptographic purposes
  * @kind problem
+ * @tags security
+ *       external/cwe/cwe-502
  * @precision very-high
- * @id cs/find-classes
+ * @id cs/weak-hashes
  * @problem.severity error
  */
 
 import csharp
 
-from Class c 
-select c, "this is a Class"
+from <TODO>
+where <TODO>
+select <TODO>
 ```
 
 Let's try and select for this case in the WeakHashes.cs file in our sample database: 
@@ -82,10 +89,11 @@ Following the steps above, open the AST for this file.
 
 ![SHA1.Create in AST](images/sha1-create-ast.png)
 
-We can see that in CodeQL, this is a MethodCall. Update the query so that it selects MethodCalls instead of classes. 
+We can see that in CodeQL, this is a MethodCall. Update the query so that it selects all MethodCalls from our database. Re-run the query, and we can see that SHA1.Create() is among our results. 
 
-Next, we want to select 
+![WeakHashes Result](images/weakhashesresult.png)
 
+This is good progress - next we want to update our query to something like: 
 ```
 from MethodCall mc 
 where <mc calls SHA1.Create>
@@ -112,10 +120,10 @@ We're getting closer. Method has several predicates that have "name" in the name
 
 Like above, we can select for getName and getUndecoratedName to see what they return. But the other two evaluate to true or false. Instead, we can simply CTRL-F in the codeql/csharp/ql folder of this repository to see how these predicates have been used in other queries written by github. 
 
-![CTRL-F GetName](images/ctrl-f-getname.png)
-![CTRL-F GetQualifiedName](images/ctrl-f-getqualifiedname.png)
+![CTRL-F HasName](images/ctrl-f-getname.png)
+![CTRL-F HasFullyQualifiedName](images/ctrl-f-getqualifiedname.png)
 
-Of these options, .getQualifiedName seems to be our best bet, since it'll let us select for the Create class specifically from the "System.Security.Cryptography.SHA1" library
+Of these options, .hasFullyQualifiedName seems to be our best bet, since it'll let us select for the Create class specifically from the "System.Security.Cryptography.SHA1" library
 
 Putting this all together, our final query is: 
 

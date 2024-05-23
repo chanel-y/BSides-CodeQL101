@@ -11,7 +11,7 @@
 
  import csharp
 
-  private module FlowsFromInsufficientSizeToRSACreationFlow = DataFlow::Global<FlowsFromInsufficientSizeToRSACreation>;
+  module FlowsFromInsufficientSizeToRSACreationFlow = DataFlow::Global<FlowsFromInsufficientSizeToRSACreation>;
   
   module FlowsFromInsufficientSizeToRSACreation implements DataFlow::ConfigSig {
     predicate isSource(DataFlow::Node source) { source.asExpr().(IntegerLiteral).getValue().toInt() < 2048 }

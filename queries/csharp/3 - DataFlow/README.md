@@ -73,10 +73,10 @@ module MyFlow = TaintTracking::Global<MyFlowConfiguration>;
 
 ## In this Exercise
 
-### Starting Code
+### Starter Code
 Let's write a query that checks for cases where you create an [RSA object](https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.rsa?view=net-8.0) using a key value of less than 2048 bits, considered the standard key size for a high-strength key ([source](https://www.ibm.com/docs/en/zos/2.4.0?topic=certificates-size-considerations-public-private-keys)). The sample code for this exercise is in the "RSAInsufficientKeySize.cs" file in the sample project.
 
-First, copy over the starting code to a file named "RSAInsufficientKeySize.ql". 
+First, copy over the starter code to a file named "RSAInsufficientKeySize.ql". 
 
 ```
 /**
@@ -97,10 +97,6 @@ import csharp
 ### Defining our Source and Sink
 
 As a first step, we need to define our source and sink. In this case, our source will be "any hardcoded integer < 2048", and our sink will be "argument to RSA.Create()"
-
-Using the techniques from the previous parts, we can find our sink using the AST of the sample code file: 
-
-TODO: add screenshot
 
 Our source is an IntLiteral type. If we go to this type's [page in the standard library](https://codeql.github.com/codeql-standard-libraries/csharp/semmle/code/csharp/exprs/Literal.qll/type.Literal$IntLiteral.html), we can see a getValue() predicate, which returns a string. Then, if we go to the string type's [page in the standard library](https://codeql.github.com/codeql-standard-libraries/csharp/type.string.html), we can see a toInt() predicate, which returns an int value for that string. 
 
@@ -130,12 +126,12 @@ select e, "argument "
 ```
 
 ### isSource and isSink
-Now that we've defined our source and sink, we can start writing our dataflow query. Copying over the sample code from earlier, all we need to do is populate the isSource and isSink predicates: 
+Now that we've defined our source and sink, we can start writing our dataflow query. Copy over the codeql dataflow syntax from earlier, and do some renaming so your query looks like the following:  
 
 ```
 import csharp
 
-module MyFlowConfiguration implements DataFlow::ConfigSig {
+module FlowsFromInsufficientSizeToRSACreation implements DataFlow::ConfigSig {
   predicate isSource(DataFlow::Node source) {
     ...
   }
@@ -145,14 +141,14 @@ module MyFlowConfiguration implements DataFlow::ConfigSig {
   }
 }
 
-module MyFlow = DataFlow::Global<MyFlowConfiguration>;
+module FlowsFromInsufficientSizeToRSACreationFlow = DataFlow::Global<FlowsFromInsufficientSizeToRSACreation>;
 
 from DataFlow::Node source, DataFlow::Node sink
-where MyFlow::flow(source, sink)
-select source, "Dataflow to $@.", sink, sink.toString()
+where FlowsFromInsufficientSizeToRSACreationFlow::flow(source, sink)
+select source, "Dataflow from int with value <2048 to create RSA at $@.", sink, sink.toString()
 ```
 
-Both of these predicates have a DataFlow::Node argument which we will be defining by rewriting the queries we wrote before: 
+All we need to do is populate the isSource and isSink predicates. Both of these predicates have a DataFlow::Node argument which we will be defining by rewriting the queries we wrote before: 
 
 ```
 predicate isSource(DataFlow::Node source) { source.asExpr().(IntegerLiteral).getValue().toInt() < 2048 }
@@ -166,6 +162,48 @@ predicate isSink(DataFlow::Node sink) {
 ```
 
 Notice that both predicates use .asExpr() on the source and sink. You'll generally use this predicate in order to interact with the actual object in code that the DataFlow::Node type represents. 
+
+Re-run the final query: 
+
+```
+/**
+ * @name RSA Key creation with an insufficient key length
+ * @description Finds creation of RSA that explicitly have insufficient key size
+ * @kind problem
+ * @tags security
+ *       external/cwe/cwe-502
+ * @precision very-high
+ * @id cs/rsa-key-creation-insufficient-key-length-demo-solution
+ * @problem.severity error
+ */
+
+ import csharp
+
+  module FlowsFromInsufficientSizeToRSACreationFlow = DataFlow::Global<FlowsFromInsufficientSizeToRSACreation>;
+  
+  module FlowsFromInsufficientSizeToRSACreation implements DataFlow::ConfigSig {
+    predicate isSource(DataFlow::Node source) { source.asExpr().(IntegerLiteral).getValue().toInt() < 2048 }
+  
+    predicate isSink(DataFlow::Node sink) {
+      exists(MethodCall mc | 
+        mc.getTarget().hasFullyQualifiedName("System.Security.Cryptography.RSA", "Create") and 
+        sink.asExpr() = mc.getAnArgument()
+      )
+    }
+  }
+  
+  from
+     DataFlow::Node source, DataFlow::Node sink
+  where
+    FlowsFromInsufficientSizeToRSACreationFlow::flow(source, sink)
+select sink, "Weak asymmetric encryption algorithm. RSA creation with a $@ is banned by the SDL. Switch to a RSA with at least 2048 key size, ECDH or ECDSA algorithm instead.",
+    source, "key length < 2048bits"
+```
+
+And we get our expected result: 
+
+![Insufficient RSA Result](images/insufficient-rsa-result.png)
+
 
 **Exercise**: Write a query that looks for when a hardcoded string is used as the key for an encryption algorithm (see [CWE-321](https://cwe.mitre.org/data/definitions/321.html)). The sample code for this exercise is in the "HardcodedEncryptionKey.cs" file in the sample project.
 
