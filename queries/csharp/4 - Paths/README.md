@@ -25,15 +25,20 @@ where Flow::flowPath(source, sink)
 select sink.getNode(), source, sink, "<message>"
 ```
 
-## isAdditionalFlowStep/isAdditionalTaintStep
-This is an optional predicate you can define in your dataflow in addition to isSource and isSink. 
+## isAdditionalFlowStep
+This is an optional predicate you can define in your dataflow in addition to isSource and isSink. It's used if for your scenario, you want dataflow to go through a step that codeql doesn't currently pass through. 
 
+The syntax for this is as follows: 
+```
+predicate isAdditionalFlowStep(DataFlow::Node pred, DataFlow::Node succ){
+  ...
+}
+```
 
-
-
+In the predicate, you define the additional step by defining the relationship between the two pred and succ dataflow nodes. 
 
 ## In this Exercise
-Let's write a query that checks for flow from user input to deserialization by the BinaryFormatter class, a vulnerability documented [here](https://learn.microsoft.com/en-us/dotnet/standard/serialization/binaryformatter-security-guide). The sample code for this exercise is in the "RSAInsufficientKeySize.cs" file in the sample project.
+Let's write a query that checks for flow from user input to deserialization by the BinaryFormatter class, a vulnerability documented [here](https://learn.microsoft.com/en-us/dotnet/standard/serialization/binaryformatter-security-guide). The sample code for this exercise is in the "BinaryFormatterDeserialize.cs" file in the sample project.
 
 Like any of our previous dataflow queries, we start by defining our source and sink. For this particular query, we can use the existing RemoteFlowSource class since that covers user input. Our sink, an argument to a BinaryFormatter.Deserialize() call, we already modeled as an exercise in the Classes and Predicates section. 
 
@@ -90,11 +95,11 @@ predicate isSink(DataFlow::Node sink) {
 }
 ```
 
-And re-run the query. 
+And re-run the query. We're using the built-in [any()](https://codeql.github.com/docs/ql-language-reference/ql-language-specification/#non-member-built-ins) predicate, which always evaluates to true. By doing so, our query will find any dataflow between our defined source and any dataflow node it reaches.
 
 ![Sink Any](images/sink-any.png)
 
-We have one result, showing that there is flow from to `req.Body` on line 26. 
+We have one result, showing that there is flow from our user input `HttpRequest req` to `req.Body` on line 26. 
 
 Do the same steps for source, changing the isSink back to the original code, then changing the isSource predicate to be:
 
@@ -107,7 +112,7 @@ predicate isSource(DataFlow::Node sink) {
 There's many more results here, but the most interesting result is this one, showing that there is flow from ToString on line 26. 
 ![ToString Flow](images/tostring-flow.png)
 
-Dataflow isn't going between the req.Body and the result of toString(). To fix this, we can add the following predicate to our dataflow config: 
+From our debugging, it seems that dataflow isn't going between the req.Body and the result of toString(). To fix this, we can add the following predicate to our dataflow config: 
 
 ```
 predicate isAdditionalFlowStep(DataFlow::Node pred, DataFlow::Node succ){
@@ -115,13 +120,13 @@ predicate isAdditionalFlowStep(DataFlow::Node pred, DataFlow::Node succ){
   }
 ```
 
-This predicate tells CodeQL to track dataflow between the pred and succ dataflow nodes. In this case, succ is the toString() methodcall, and pred is the qualifier to that methodcall, req.Body 
+This predicate tells CodeQL to track dataflow between the pred and succ dataflow nodes. In this case, succ is the toString() methodcall, and pred is the qualifier to that methodcall, req.Body.
 
 Re-run the query with this predicate added, and we've finished writing the query!
 
 ![Final Query](images/final-query.png)
 
-**Exercise:** Using the instructions above, convert the RSA Insufficient Key Size and Hardcoded Encryption Key queries into path queries
+**Exercise:** Using the instructions above, convert the RSA Insufficient Key Size and Hardcoded Encryption Key queries into path queries. 
 
 **Exercise**: Write a path query that looks for cases where encrypt is set to false in a SQL connecion object. The sample code for this exercise is in the "InsecureSqlConnection.cs" file in the sample project.
 
