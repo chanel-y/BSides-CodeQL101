@@ -2,6 +2,15 @@
 
 > IMPORTANT: please follow the [Setup Instructions](https://github.com/chanel-y/BSides-CodeQL101/tree/main?tab=readme-ov-file#setup-instructions) before proceeding through the rest of this workshop  
 
+## Add CodeQL Database to VSCode
+After you've created a codeql database, open the CodeQL Extension in VSCode. Under Databases, select "From a folder":
+
+![From Folder](images/from-folder.png)
+
+And select your codeql database folder. After doing so, it'll appear under the Databases tab.
+
+![database](images/database.png)
+
 ## Using the AST
 Exploring the AST (Abstract Syntax Tree) of your code is a really useful way to see how to translate objects in code to CodeQL. 
 
@@ -39,7 +48,7 @@ Metadata's pretty self explanatory - this contains information about the query l
  */
 ```
 
-The structure of the query itself is very, very similar to SQL queries, where there is a from, where, and select. The select statement should select two things: the expression that you're looking for, and the message for the alert. 
+The structure of the query itself is very, very similar to SQL queries, where there is a `from`, `where`, and `select`. The select statement should generally select two things: the expression that you're looking for, and the message for the alert. While debugging though, you can select as many things as you want. 
 
 ```
 from Class c 
@@ -100,13 +109,11 @@ where <mc calls SHA1.Create>
 select mc, "this is a MethodCall of SHA1.Create"
 ```
 
-To figure out how to translate "<"mc calls SHA1.Create" into ql, we can look into what predicates are available for the MethodCall class in its [entry in the CodeQL standard library](https://codeql.github.com/codeql-standard-libraries/csharp/semmle/code/csharp/exprs/Call.qll/type.Call$MethodCall.html). This list is also reachable in VSCode intellisense:
+To figure out how to translate "mc calls SHA1.Create" into ql, we can look into what predicates are available for the MethodCall class in its [entry in the CodeQL standard library](https://codeql.github.com/codeql-standard-libraries/csharp/semmle/code/csharp/exprs/Call.qll/type.Call$MethodCall.html). This list is also reachable in VSCode intellisense:
 
 ![MethodCall Intellisense](images/methodcall-intellisense.png)
 
-There's a lot of options here, some intuitive, and some not. If the description isn't clear, we can find out more about each by using them. 
-
-Run the following query:
+There's a lot of options here, some intuitive, and some not. If the description isn't clear, we can find out more about each by using them by running the following query:
 ```
 from MethodCall mc 
 select mc, mc.getTarget(), mc.toString(), mc.getALocation()
@@ -134,7 +141,16 @@ select mc, "this is a call to SHA1.Create()"
 ```
 
 **Exercise**: Write a query that finds the other way SHA1 is created in this file, specifically the code snippet ` new SHA1CryptoServiceProvider()` 
-
+<details>
+<summary>Hint 1</summary>
+<br>
+Using the AST, what codeql class models the 'new SHA1CryptoServiceProvider'? What are its predicates? </a> 
+<br>
+</details>
+<details>
+<summary>Hint 2</summary>
+Are there any familiar predicates in the <a href="https://codeql.github.com/codeql-standard-libraries/csharp/semmle/code/csharp/exprs/Creation.qll/type.Creation$ObjectCreation.html">ObjectCreation</a> class? 
+</details>
 
 ## Further Reading
  - [Metadata for CodeQL queries](https://codeql.github.com/docs/writing-codeql-queries/metadata-for-codeql-queries/)

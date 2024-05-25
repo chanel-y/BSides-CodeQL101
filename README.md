@@ -26,6 +26,8 @@ This repository contains starter query files and docs for the CodeQL Workshop at
 
 If you're following along outside of the workshop, start with the README files in each part in the queries/csharp folder. Please do these in order, as some of the exercises build on ones from previous sections. 
 
+Solutions to these exercises are available in the solutions folder, but please first try them on your own. Keep in mind that there are multiple ways to write a query - each of these solutions is only one way to solve the exercises. 
+
 # Useful Resources
  - [Github documentation for CodeQL](https://codeql.github.com/)
  - [QL Language Reference](https://codeql.github.com/docs/ql-language-reference/)

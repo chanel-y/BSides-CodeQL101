@@ -26,7 +26,7 @@ select sink.getNode(), source, sink, "<message>"
 ```
 
 ## isAdditionalFlowStep
-This is an optional predicate you can define in your dataflow in addition to isSource and isSink. It's used if for your scenario, you want dataflow to go through a step that codeql doesn't currently pass through. 
+This is an optional predicate you can define in your dataflow in addition to isSource and isSink. You can use it if you want dataflow to go through a step that codeql doesn't currently pass through. 
 
 The syntax for this is as follows: 
 ```
@@ -35,12 +35,12 @@ predicate isAdditionalFlowStep(DataFlow::Node pred, DataFlow::Node succ){
 }
 ```
 
-In the predicate, you define the additional step by defining the relationship between the two pred and succ dataflow nodes. 
+In the predicate, you define the additional step by defining the relationship between the two pred and succ dataflow nodes. We'll see an example of this in the following exercise. 
 
 ## In this Exercise
 Let's write a query that checks for flow from user input to deserialization by the BinaryFormatter class, a vulnerability documented [here](https://learn.microsoft.com/en-us/dotnet/standard/serialization/binaryformatter-security-guide). The sample code for this exercise is in the "BinaryFormatterDeserialize.cs" file in the sample project.
 
-Like any of our previous dataflow queries, we start by defining our source and sink. For this particular query, we can use the existing RemoteFlowSource class since that covers user input. Our sink, an argument to a BinaryFormatter.Deserialize() call, we already modeled as an exercise in the Classes and Predicates section. 
+Like any of our previous dataflow queries, we start by defining our source and sink. For this particular query, we can use the existing RemoteFlowSource class since that covers user input. Our sink is an argument to a BinaryFormatter.Deserialize() call. This is very, very similar to our previous RSA insufficient key size sink, just a different method name. 
 
 Putting the above together with our path query syntax, we have the following query: 
 
@@ -81,7 +81,7 @@ where
 select deserialize.getNode(), userInput, deserialize, "user input flows to BinaryFormatter deserialize"
 ```
 
-Note: for this query, we're choosing to use TaintTracking, as we are considering user input vulnerable even if the value is modified along the dataflow
+For this query, we're choosing to use TaintTracking, as we are considering user input vulnerable even if the value is modified along the dataflow
 
 But if we run this query as-is... we get no results. 
 
@@ -101,7 +101,7 @@ And re-run the query. We're using the built-in [any()](https://codeql.github.com
 
 We have one result, showing that there is flow from our user input `HttpRequest req` to `req.Body` on line 26. 
 
-Do the same steps for source, changing the isSink back to the original code, then changing the isSource predicate to be:
+Do the same steps for source, by changing the isSink predicate back to the original code, then changing the isSource predicate to be:
 
 ```
 predicate isSource(DataFlow::Node sink) {
@@ -126,7 +126,7 @@ Re-run the query with this predicate added, and we've finished writing the query
 
 ![Final Query](images/final-query.png)
 
-**Exercise:** Using the instructions above, convert the RSA Insufficient Key Size and Hardcoded Encryption Key queries into path queries. 
+**Exercise:** Using the instructions above, convert the RSA Insufficient Key Size and Hardcoded Encryption Key queries into path queries
 
 **Exercise**: Write a path query that looks for cases where encrypt is set to false in a SQL connecion object. The sample code for this exercise is in the "InsecureSqlConnection.cs" file in the sample project.
 

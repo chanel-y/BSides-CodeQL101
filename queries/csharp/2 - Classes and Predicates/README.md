@@ -6,7 +6,7 @@ In the last sections, we've used and gotten familiar with the built-in types and
 
 The builtin types are: boolean, float, int, string, and date. 
 
-Like the MethodCall type that we used in the last section, CodeQL comes with many predefined classes. The (API documentation)[https://codeql.github.com/codeql-standard-libraries/csharp/] is a generated list of all of them and their predicates.
+Like the MethodCall and ObjectCreation types that we used in the last section, CodeQL comes with many predefined classes. The [API documentation](https://codeql.github.com/codeql-standard-libraries/csharp/) is a generated list of all of them and their predicates.
 
 You can also define your own custom types, using the following syntax: 
 
@@ -44,7 +44,7 @@ class SeventeenFiftyTwelve extends NumbersILike {
 
 ```
 
-**Exercise:** Write an abstract class that combines both queries from the last exercise (`SHA1.Create();` and ` new SHA1CryptoServiceProvider()` ) . 
+**Exercise:** Write an abstract class that combines both queries from the last exercise - `SHA1.Create();` and ` new SHA1CryptoServiceProvider()` 
 
 ## What are Predicates?
 Predicates are to functions what types are to classes in CodeQL. 
@@ -91,11 +91,18 @@ class OneTwoThree extends int {
 }
 ```
 
-**Exercise**: Create a class named "TODOComment", and rewrite your query from the last section  that the select statement looks like:
+**Exercise**: Create a class named "TODOComment", and rewrite your query from the last section so that the select statement looks like:
 
 ```
 from TODOComment todo
 select todo, "TODO comment"
+```
+
+**Exercise**: Create a class named "Empty Try Catch", and rewrite your query from the last section so that the select statement looks like:
+
+```
+from EmptyTryCatch c
+select c, "Empty Try-Catch clause"
 ```
 
 

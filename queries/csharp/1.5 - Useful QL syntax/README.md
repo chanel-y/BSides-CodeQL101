@@ -157,7 +157,7 @@ As you can see, the "qualifier" of the methodcall is the object (if one exists) 
 <details>
 <summary>Hint 1</summary>
 <br>
-Open any of the files in the sample project and view its AST using the <a href="https://github.com/chanel-y/BSides-CodeQL101/tree/main/queries/csharp/1%20-%20Intro#using-the-ast">steps from the previous section. What class are we looking for with "all comments with TODO" </a> 
+Open any of the files in the sample project and view its AST using the <a href="https://github.com/chanel-y/BSides-CodeQL101/tree/main/queries/csharp/1%20-%20Intro#using-the-ast">steps from the previous section. </a> What class are we looking for with "all comments with TODO"  ?
 <br>
 </details>
 <details>
@@ -174,7 +174,7 @@ Look through the predicates available to the built-in <a href="https://codeql.gi
 <details>
 <summary>Hint 1</summary>
 <br>
-Open the file "EmptyTryCatch.cs" in the sample project and view its AST using the <a href="https://github.com/chanel-y/BSides-CodeQL101/tree/main/queries/csharp/1%20-%20Intro#using-the-ast">steps from the previous section. What codeql class are we targeting here?</a> 
+Open the file "EmptyTryCatch.cs" in the sample project and view its AST using the <a href="https://github.com/chanel-y/BSides-CodeQL101/tree/main/queries/csharp/1%20-%20Intro#using-the-ast">steps </a> from the previous section. What codeql class are we targeting here?
 <br>
 </details>
 <details>

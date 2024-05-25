@@ -28,7 +28,7 @@ select source, "Dataflow to $@.", sink, sink.toString()
 
 When writing a dataflow query, you need to identify your source and sink using the isSource and isSink predicates. For example, your source could be a hardcoded string, or user input. 
 
-A common pattern for dataflow is to define the source and sink as abstract classes, then use the instanceof keyword in the isSource and isSink predicates.
+A common pattern for dataflow is to define the source and sink as abstract classes, then use the instanceof keyword in the isSource and isSink predicates. For example:
 
 ```
 abstract class Sink extends Expr {}
@@ -74,9 +74,9 @@ module MyFlow = TaintTracking::Global<MyFlowConfiguration>;
 ## In this Exercise
 
 ### Starter Code
-Let's write a query that checks for cases where you create an [RSA object](https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.rsa?view=net-8.0) using a key value of less than 2048 bits, considered the standard key size for a high-strength key ([source](https://www.ibm.com/docs/en/zos/2.4.0?topic=certificates-size-considerations-public-private-keys)). The sample code for this exercise is in the "RSAInsufficientKeySize.cs" file in the sample project.
+Let's write a query that checks for cases where you create an [RSA object](https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.rsa?view=net-8.0) using a key value of less than 2048 bits, considered the standard key size for a high-strength key (details [here](https://www.ibm.com/docs/en/zos/2.4.0?topic=certificates-size-considerations-public-private-keys)). The sample code for this exercise is in the "RSAInsufficientKeySize.cs" file in the sample project.
 
-First, copy over the starter code to a file named "RSAInsufficientKeySize.ql". 
+First, copy over the following starter code to a file named "RSAInsufficientKeySize.ql". 
 
 ```
 /**
@@ -98,7 +98,7 @@ import csharp
 
 As a first step, we need to define our source and sink. In this case, our source will be "any hardcoded integer < 2048", and our sink will be "argument to RSA.Create()"
 
-Our source is an IntLiteral type. If we go to this type's [page in the standard library](https://codeql.github.com/codeql-standard-libraries/csharp/semmle/code/csharp/exprs/Literal.qll/type.Literal$IntLiteral.html), we can see a getValue() predicate, which returns a string. Then, if we go to the string type's [page in the standard library](https://codeql.github.com/codeql-standard-libraries/csharp/type.string.html), we can see a toInt() predicate, which returns an int value for that string. 
+Using the AST, we can see that our source is an IntLiteral type. If we go to this type's [page in the standard library](https://codeql.github.com/codeql-standard-libraries/csharp/semmle/code/csharp/exprs/Literal.qll/type.Literal$IntLiteral.html), we can see a getValue() predicate, which returns a string. Then, if we go to the string type's [page in the standard library](https://codeql.github.com/codeql-standard-libraries/csharp/type.string.html), we can see a toInt() predicate, which returns an int value for that string. 
 
 Putting this all together, we can run the following query to find our source: 
 ```
@@ -109,7 +109,7 @@ where i.getValue().toInt() < 2048
 select i, "integer with value < 2048"
 ```
 
-Next, we need to define our sink. This is an argument to a methodcall, which is a type we're already familiar with after our SHA1 query. Using the steps from before, we can identify calls to RSA.Create() using the .hasQualifiedName predicate, then use MethodCall's [getArgument](https://codeql.github.com/codeql-standard-libraries/csharp/semmle/code/csharp/exprs/Call.qll/predicate.Call$Call$getArgument.1.html) predicate to get an argument to that call. 
+Next, we need to define our sink. This is an argument to a Methodcall, which is a type we're already familiar with after our SHA1 query. Using the steps from before, we can identify calls to RSA.Create() using the .hasQualifiedName predicate, then use MethodCall's [getArgument](https://codeql.github.com/codeql-standard-libraries/csharp/semmle/code/csharp/exprs/Call.qll/predicate.Call$Call$getArgument.1.html) predicate to get an argument to that call. 
 
 Putting this all together, we can run the following query to find our sink:
 
