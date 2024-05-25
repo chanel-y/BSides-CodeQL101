@@ -207,6 +207,24 @@ And we get our expected result:
 
 **Exercise**: Write a query that looks for when a hardcoded string is used as the key for an encryption algorithm (see [CWE-321](https://cwe.mitre.org/data/definitions/321.html)). The sample code for this exercise is in the "HardcodedEncryptionKey.cs" file in the sample project.
 
+<details>
+<summary>Hint 1</summary>
+<br>
+Open the file "HardcodedEncryptionKey.cs" in the sample project, and view its AST using the <a href="https://github.com/chanel-y/BSides-CodeQL101/tree/main/queries/csharp/1%20-%20Intro#using-the-ast">steps from the previous section. </a>  What are the sources and sinks for this problem? What are their classes?
+<br>
+</details>
+<details>
+<summary>Hint 2</summary>
+The source is a hardcoded string, so <a href="https://github.com/chanel-y/BSides-CodeQL101/tree/main/queries/csharp/1.5%20-%20Useful%20QL%20syntax#instanceof">instanceof </a> should be sufficient for defining it. 
+
+There are two sinks. In plain english, how would you describe these? Using <a href="https://github.com/chanel-y/BSides-CodeQL101/tree/main/queries/csharp/1.5%20-%20Useful%20QL%20syntax#exists">exists</a> will help here. 
+</details>
+<details>
+<summary>Hint 3</summary>
+In plain english, the sinks are: <br> "the right value of an Assignment where the left side is a PropertyCall with the name Key"<br> and <br>
+"The argument named 'rgbkey' to a methodcall to  System.Security.Cryptography.SymmetricAlgorithm.CreateEncryptor"
+</details>
+<br>
 
 ## Further Reading
  - [Analyzing data flow in C#](https://codeql.github.com/docs/codeql-language-guides/analyzing-data-flow-in-csharp/)

@@ -5,14 +5,12 @@
  * @kind problem
  * @problem.severity recommendation
  * @precision medium
- * @id cs/todo-comment
- * @tags maintainability
- *       external/cwe/cwe-546
+ * @id cs/todo-comment-demo-solution
  */
 
  import csharp
 
  from CommentLine c
- where c.getText().regexpMatch("(?s).*FIXME.*|.*TODO.*|.*(?<!=)\\s*XXX.*")
+ where c.getText().matches("%TODO%") //note: .regexpmatch is also valid here
  select c, "TODO comments should be addressed."
  

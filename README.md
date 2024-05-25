@@ -12,13 +12,14 @@
 Run the following commands to retrieve the codeql submodule that contains the libraries/queries from the github codeql repository:
 
 ```
+cd BSides-CodeQL101
 git submodule init
 git submodule update
 ```
 
 ## Creating a CodeQL Database
 - clone the [sample project repo](https://github.com/chanel-y/BSides-Sample-Project)
-- run `codeql database create --language=csharp --source-root=BSides-Sample-Project sample_project_db`
+- run `codeql database create --language=csharp --source-root=<path to sample project>/BSides-Sample-Project sample_project_db`
 
 # Using this Workshop
 This repository contains starter query files and docs for the CodeQL Workshop at BSides Vancouver 2024. 

@@ -1,5 +1,7 @@
 # Types and Predicates
 
+In the last sections, we've used and gotten familiar with the built-in types and predicates codeql provides, but now let's go more in depth, and learn how to define our own. 
+
 ## What are Types? 
 
 The builtin types are: boolean, float, int, string, and date. 
@@ -50,12 +52,21 @@ Predicates are to functions what types are to classes in CodeQL.
 Predicates can either return a result. For example: 
 
 ```
+int getNumberString(int i){
+  i = 1 and result = "one" or 
+  i = 2 and result = "two" or 
+  i = 3 and result = "three"
+}
+
+```
+
+or they can evaluate to true or false. For example:
+```
 predicate isNumberILike(int i){
   result in [1,2,3]
 }
 
 ```
-
 
 Types can also have member predicates. Using the previous class above, we can add a member predicate like so: 
 

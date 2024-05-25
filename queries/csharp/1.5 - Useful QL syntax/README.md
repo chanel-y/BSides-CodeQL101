@@ -145,7 +145,7 @@ from MethodCall mc
 select mc, mc.getQualifier()
 ```
 
-Note: The editor will give the error "A problem query must select a string representing the message as its 2nd result.", but this doesn't matter during the query-writing phase
+Note: The editor will give the error "A problem query must select a string representing the message as its 2nd result.", but this doesn't matter during the query-writing phase. 
 
 Run the query: 
 
@@ -154,8 +154,38 @@ Run the query:
 As you can see, the "qualifier" of the methodcall is the object (if one exists) on which the methodcall is called from. For any Access subclass like PropertyAccess or MemberAccess, it would be the object whose property or member you are accessing.
 
 **Exercise**: Write a query that finds all comments with "TODO". Each of the sample .cs files will have one.
+<details>
+<summary>Hint 1</summary>
+<br>
+Open any of the files in the sample project and view its AST using the <a href="https://github.com/chanel-y/BSides-CodeQL101/tree/main/queries/csharp/1%20-%20Intro#using-the-ast">steps from the previous section. What class are we looking for with "all comments with TODO" </a> 
+<br>
+</details>
+<details>
+<summary>Hint 2</summary>
+Look through the predicates available to the <a href="https://codeql.github.com/codeql-standard-libraries/csharp/semmle/code/csharp/Comments.qll/type.Comments$CommentLine.html">CommentLine class</a>. Which might be useful here?
+</details>
+<details>
+<summary>Hint 3</summary>
+Look through the predicates available to the built-in <a href="https://codeql.github.com/codeql-standard-libraries/csharp/type.string.html">string class</a>. Which might be useful here?
+</details>
+<br>
 
 **Exercise**: Write a query that finds all try-catch clauses where the catch block is empty. The sample code for this exercise is in the "EmptyTryCatch.cs" file in the sample project.
+<details>
+<summary>Hint 1</summary>
+<br>
+Open the file "EmptyTryCatch.cs" in the sample project and view its AST using the <a href="https://github.com/chanel-y/BSides-CodeQL101/tree/main/queries/csharp/1%20-%20Intro#using-the-ast">steps from the previous section. What codeql class are we targeting here?</a> 
+<br>
+</details>
+<details>
+<summary>Hint 2</summary>
+Look through the predicates available to the <a href="https://codeql.github.com/codeql-standard-libraries/csharp/semmle/code/csharp/Stmt.qll/type.Stmt$CatchClause.html">CatchClause class</a>. Which might be useful here?
+</details>
+<details>
+<summary>Hint 3</summary>
+We want to write a query checking if the block of the CatchClause is empty. What predicate in the <a href="https://codeql.github.com/codeql-standard-libraries/csharp/semmle/code/csharp/Stmt.qll/type.Stmt$BlockStmt.html">BlockStmt</a> class would be useful here?
+</details>
+<br>
 
 ## Further Reading
  - [QL Language Reference](https://codeql.github.com/docs/ql-language-reference/)
