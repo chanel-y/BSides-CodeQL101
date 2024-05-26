@@ -20,12 +20,7 @@ module InsecureSqlConnectionConfig implements DataFlow::ConfigSig {
   predicate isSink(DataFlow::Node sink) {
     exists(ObjectCreation oc |
       oc.getRuntimeArgument(0) = sink.asExpr() and
-      oc.getType().getName() = "SqlConnectionStringBuilder" and 
-      not exists(MemberInitializer mi | 
-        mi = oc.getInitializer().(ObjectInitializer).getAMemberInitializer() and
-        mi.getLValue().(PropertyAccess).getTarget().getName() = "Encrypt" and
-        mi.getRValue().(BoolLiteral).getValue() = "true"
-      )
+      oc.getType().getName() = "SqlConnectionStringBuilder"
     )
   }
 }
